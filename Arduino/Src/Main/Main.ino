@@ -43,6 +43,11 @@
 #define DIR_DELAY 1000 // brief delay for abrupt motor changes
 #define CONTROL_PAUSE 2000 // to pause between steps for dramatic effect
 
+//configured servo values
+#define FULL_LEFT -25
+#define FULL_RIGHT 155
+#define STRAIGHT (FULL_RIGHT+FULL_LEFT)/2
+
 Servo myservo; // create servo object to control a servo
 int ServoPos = 0;
 
@@ -62,16 +67,34 @@ void setup()
   pinMode( MOTOR_B_PWM, OUTPUT );
   digitalWrite( MOTOR_B_DIR, LOW );
   digitalWrite( MOTOR_B_PWM, LOW );
-    delay(5000); //always start with a delay so I can move the wheels if needed
+  pinMode(LED_BUILTIN, OUTPUT);
+   // delay(3000); //always start with a delay so I can move the wheels if needed
+  myservo.write(FULL_LEFT);
+  delay(1000);
+  myservo.write(FULL_RIGHT);
+  delay(1000);
+  myservo.write(STRAIGHT);
+ // delay(2000);
 }
 
 
 void loop(){
  //myservo.write(90) //arbitrary point?
+long tempDistance = readUltrasonic(); //returns in centimeters
 
 // Prints the distance on the Serial Monitor
-Serial.print("Distance: ");
-Serial.println(readUltrasonic());
+Serial.print("Distance: tempDistance");
+
+if(tempDistance<30){
+  Serial.println("wall: stopping");
+  digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
+  stopBMotor();
+}
+else{
+Serial.println("Distance: driving");
+  driveSlow();
+}
+
   
   /*Serial.println( "st0arting" );;
   Serial.println( "slow forward..." );
@@ -102,7 +125,7 @@ long readUltrasonic(){
   distance3 = distance2;
   distance2 = distance1;
   
-  // Reads the echoPin, returns the sound wave travel time in microseconds
+  // Reads the echoPin, returns the sound wave travel time in microseconds  (0.340197 centimeters /microsecond at sea level, round trip)
   distance1 = pulseIn(ultrasonic_echo_pin, HIGH) * 0.034/2;
 
   return (distance1+distance2+distance3)/3;
