@@ -38,8 +38,9 @@
 #define MOTOR_B_DIR HG7881_B_IB // Motor B Direction
  
 // the actual values for "fast" and "slow" depend on the motor
-#define PWM_SLOW 150  // arbitrary slow speed PWM duty cycle
+#define PWM_SLOW 250  // arbitrary slow speed PWM duty cycle
 #define PWM_FAST 2 // arbitrary fast speed PWM duty cycle
+
 #define DIR_DELAY 1000 // brief delay for abrupt motor changes
 #define CONTROL_PAUSE 2000 // to pause between steps for dramatic effect
 
@@ -47,6 +48,7 @@
 #define FULL_LEFT -25
 #define FULL_RIGHT 155
 #define STRAIGHT (FULL_RIGHT+FULL_LEFT)/2
+
 
 Servo myservo; // create servo object to control a servo
 int ServoPos = 0;
@@ -56,6 +58,8 @@ long duration;
 int distance1=0;
 int distance2=0;
 int distance3=0;
+
+int currentDriveSpeed=0; //initalize to a stopped speed
 
 void setup()
 {
@@ -81,20 +85,27 @@ void setup()
 void loop(){
  //myservo.write(90) //arbitrary point?
 long tempDistance = readUltrasonic(); //returns in centimeters
-
+int targetDriveSpeed=0;
 // Prints the distance on the Serial Monitor
-Serial.print("Distance: tempDistance");
+//Serial.println("Distance: "+String(tempDistance));
 
-if(tempDistance<30){
-  Serial.println("wall: stopping");
+//decide speed
+if(tempDistance<20){
+
   digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-  stopBMotor();
+  targetDriveSpeed = 0;
+}
+else if (tempDistance<50){
+targetDriveSpeed = 25;  
+}
+else if (tempDistance>=50){
+  targetDriveSpeed = 75;
 }
 else{
-Serial.println("Distance: driving");
-  driveSlow();
+  Serial.println("ERROR - invalid distance choice");
 }
 
+setSpeed(targetDriveSpeed);
   
   /*Serial.println( "st0arting" );;
   Serial.println( "slow forward..." );
@@ -128,14 +139,39 @@ long readUltrasonic(){
   // Reads the echoPin, returns the sound wave travel time in microseconds  (0.340197 centimeters /microsecond at sea level, round trip)
   distance1 = pulseIn(ultrasonic_echo_pin, HIGH) * 0.034/2;
 
-  return (distance1+distance2+distance3)/3;
+  return (distance1+distance2+distance3)/3; //average the last three. Slows it down a bit but stops random stops
 }
 
-void driveSlow(){
-   driveBMotor(true, PWM_FAST); //to get started rolling
-   delay(150);
-   driveBMotor(true, PWM_SLOW);
+
+
+//newSpeed - percentage of speed to drive (0 = full stop)
+void setSpeed(int newSpeed){
+int PWM_Setting = (PWM_SLOW - ((PWM_SLOW*newSpeed)/100)+1); //speed inversely correlated to PWM
+  
+  //set the speed
+if(newSpeed==currentDriveSpeed){
+ // Serial.println("do nothing");
+  //do nothing
 }
+else if(newSpeed>currentDriveSpeed){
+  Serial.println("speed up to"+String(newSpeed)+" and "+String(PWM_Setting));
+  driveBMotor(true, PWM_FAST); //to get the car moving
+  delay(150);
+  driveBMotor(true, PWM_Setting);
+  currentDriveSpeed = newSpeed;
+}
+else if(newSpeed == 0){
+  Serial.println("wall: stopping"+String(newSpeed)+" and "+String(PWM_Setting));
+  stopBMotor();
+  currentDriveSpeed = newSpeed;
+}
+else{
+  Serial.println("slow down to "+String(newSpeed)+" and "+String(PWM_Setting));
+     driveBMotor(true, PWM_Setting);
+     currentDriveSpeed = newSpeed;
+}
+}
+
 void stopBMotor(){
   digitalWrite( MOTOR_B_DIR, LOW );
   digitalWrite( MOTOR_B_PWM, LOW );
