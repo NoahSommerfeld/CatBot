@@ -42,22 +42,24 @@ String readNext(){
   if(data.equals("|")){ //start of packet
     Serial.println("got a startOfPacket");
     while(parseCount<1000){ //to avoid an infinite loop
- 
+       if (Serial.available() > 0) {
       int tempData2 = Serial.read();
       char tempChar2 = tempData2;
       data = String(tempChar2);
+       }
       Serial.println("data = "+data);
       if(data.equals("+")){ //end of packet
         Serial.println("got an endofpacket");
         break;
       }
       else if(data.equals("|") || data.equals('⸮') || data.equals('\n')){
+        Serial.println("discarding char");
         //repeating start symbol or non text, do nothing
       }
       else{
         tempCmd += data;
       }
-
+      data="";
       parseCount+=1;
     }
   }
