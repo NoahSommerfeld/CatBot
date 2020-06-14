@@ -22,7 +22,6 @@ String nextCMD = readNext();
 if(nextCMD != ""){
   Serial.println("I heard: "+nextCMD);
 }
-//do stuff (echo it back?)
 
 }
 
@@ -31,40 +30,50 @@ String readNext(){
   //serial.println("starting read");
   String tempCmd = "";
   int parseCount=0;
-  String data = "";
+  char tempChar = '\0';
   if (Serial.available() > 0) {
     int tempData = Serial.read();
-    char tempChar = tempData;
-    data = String(tempChar);
-    
-    Serial.println("got a character: "+data);
+    tempChar = tempData;  
+    Serial.println("got a character: '"+String(tempChar)+"' Ascii:"+tempData);
   }
-  if(data.equals("|")){ //start of packet
+  else{
+    return "";
+  }
+
+  if(tempChar =='|'){ //start of packet
     Serial.println("got a startOfPacket");
-    while(parseCount<1000){ //to avoid an infinite loop
+    while(parseCount<10000){ //to avoid an infinite loop. TODO - update to use millis vs arb. clock cycles
+      parseCount+=1;
+      char tempChar = '\0'; 
        if (Serial.available() > 0) {
       int tempData2 = Serial.read();
-      char tempChar2 = tempData2;
-      data = String(tempChar2);
+      tempChar = tempData2;
        }
-      Serial.println("data = "+data);
-      if(data.equals("+")){ //end of packet
+       else{
+        continue;
+       }
+
+      if(tempChar=='+'){ //end of packet
         Serial.println("got an endofpacket");
-        break;
+        return tempCmd;
       }
-      else if(data.equals("|") || data.equals('⸮') || data.equals('\n')){
-        Serial.println("discarding char");
+      else if(tempChar == '|' || tempChar == 10){
+        Serial.println("discarding char: '"+String(tempChar)+"'");
         //repeating start symbol or non text, do nothing
       }
       else{
-        tempCmd += data;
-      }
-      data="";
-      parseCount+=1;
+        Serial.println("adding char '"+String(tempChar)+"'");
+        if(tempChar != '\0'){
+          tempCmd += tempChar;
+        }
+      }      
     }
   }
+  else{
+    return "";
+  }
 
-  return tempCmd;
+  return "timeout"; //timeout - drop the data that had been received
 }
 
 /*
