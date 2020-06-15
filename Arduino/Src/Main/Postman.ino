@@ -19,7 +19,7 @@ String refreshMailbox(){
   while(Serial.available() > 0) {
     int tempData = Serial.read();
     tempChar = tempData;  
-     Serial.println("got a character: '"+String(tempChar)+"' Ascii:"+tempData);
+   //  Serial.println("got a character: '"+String(tempChar)+"' Ascii:"+tempData);
   
     if(tempChar ==PACKETSTARTSYMBOL){ //start of packet
       //   Serial.println("got a startOfPacket");

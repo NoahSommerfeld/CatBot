@@ -1,35 +1,132 @@
+#include <Servo.h>
 
-/* Takes in a packet via serial connection and echoes it back.
-- uses a made-up protocol:
-- packet start symbol - '|'
-- packet end symbol - '+'
-- packet structure: TBD
+/*
+  HG7881_Motor_Driver_Example - Arduino sketch
+   
+  This example shows how to drive a motor with using HG7881 (L9110) Dual
+  Channel Motor Driver Module.  For simplicity, this example shows how to
+  drive a single motor.  Both channels work the same way.
+   
+  This example is meant to illustrate how to operate the motor driver
+  and is not intended to be elegant, efficient or useful.
+   
+  Connections:
+   
+    Arduino digital output D10 to motor driver input B-IA.
+    Arduino digital output D11 to motor driver input B-IB.
+    Motor driver VCC to operating voltage 5V.
+    Motor driver GND to common ground.
+    Motor driver MOTOR B screw terminals to a small motor.
+     
+  Related Banana Robotics items:
+   
+    BR010038 HG7881 (L9110) Dual Channel Motor Driver Module
+    https://www.BananaRobotics.com/shop/HG7881-(L9110)-Dual-Channel-Motor-Driver-Module
+ 
+  https://www.BananaRobotics.com
 */
+ 
+// wired connections
+#define HG7881_B_IA 10 // D10 --> Motor B Input A --> MOTOR B +
+#define HG7881_B_IB 11 // D11 --> Motor B Input B --> MOTOR B -
+#define SERVODRIVER 9 //wire controlling line
+#define ultrasonic_trigger_pin 13
+#define ultrasonic_echo_pin 12
+
+// functional connections
+#define MOTOR_B_PWM HG7881_B_IA // Motor B PWM Speed
+#define MOTOR_B_DIR HG7881_B_IB // Motor B Direction
+ 
+// the actual values for "fast" and "slow" depend on the motor
+#define PWM_SLOW 250  // arbitrary slow speed PWM duty cycle
+#define PWM_FAST 2 // arbitrary fast speed PWM duty cycle
+
+#define DIR_DELAY 1000 // brief delay for abrupt motor changes
+#define CONTROL_PAUSE 2000 // to pause between steps for dramatic effect
+
+//configured servo values
+#define FULL_LEFT -25
+#define FULL_RIGHT 155
+#define STRAIGHT (FULL_RIGHT+FULL_LEFT)/2
 
 
+Servo myservo; // create servo object to control a servo
+int ServoPos = 0;
+
+// defines variables
+long duration;
+int distance1=0;
+int distance2=0;
+int distance3=0;
+
+int currentDriveSpeed=0; //initalize to a stopped speed
 
 void setup()
 {
-   Serial.begin(9600);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
-  }
- 
+  myservo.attach(SERVODRIVER);
+  Serial.begin( 9600 );
+  pinMode(ultrasonic_trigger_pin, OUTPUT); // Sets the trigPin as an Output
+  pinMode(ultrasonic_echo_pin, INPUT); // Sets the echoPin as an Input
+  pinMode( MOTOR_B_DIR, OUTPUT );
+  pinMode( MOTOR_B_PWM, OUTPUT );
+  digitalWrite( MOTOR_B_DIR, LOW );
+  digitalWrite( MOTOR_B_PWM, LOW );
+  pinMode(LED_BUILTIN, OUTPUT);
+   // delay(3000); //always start with a delay so I can move the wheels if needed
+  myservo.write(FULL_LEFT);
+  delay(1000);
+  myservo.write(FULL_RIGHT);
+  delay(1000);
+  myservo.write(STRAIGHT);
+ // delay(2000);
 }
 
 
 void loop(){
-String nextCMD = refreshMailbox();
-//parse packet
+String tempMessage = refreshMailbox();
+if(tempMessage.length() >0){
+  Serial.println("Receved Message: "+tempMessage);
+}
+ 
+//myservo.write(90) //arbitrary point?
+long tempDistance = readUltrasonic(); //returns in centimeters
+int targetDriveSpeed=0;
+// Prints the distance on the Serial Monitor
+//Serial.println("Distance: "+String(tempDistance));
 
-if(nextCMD != ""){
-  Serial.println("I heard: "+nextCMD);
+//decide speed
+if(tempDistance<20){
+
+  digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
+  targetDriveSpeed = 0;
+}
+else if (tempDistance<50){
+targetDriveSpeed = 25;  
+}
+else if (tempDistance>=50){
+  targetDriveSpeed = 75;
+}
+else{
+  Serial.println("ERROR - invalid distance choice");
 }
 
+setSpeed(targetDriveSpeed);
+  
+  /*Serial.println( "st0arting" );;
+  Serial.println( "slow forward..." );
+   // always stop motors briefly before abrupt changes
+   driveSlow();
+   delay(CONTROL_PAUSE);
+   
+   Serial.println( " fast forward..." );
+    driveBMotor(true, PWM_FAST);
+    delay(CONTROL_PAUSE);
+    Serial.println( "stoppingd..." );
+   stopBMotor();
+    delay(CONTROL_PAUSE);
+*/
 }
 
-
-/*
 long readUltrasonic(){
   // Clears the trigPin
   digitalWrite(ultrasonic_trigger_pin, LOW);
@@ -50,8 +147,8 @@ long readUltrasonic(){
   return (distance1+distance2+distance3)/3; //average the last three. Slows it down a bit but stops random stops
 }
 
-*/
-/*
+
+
 //newSpeed - percentage of speed to drive (0 = full stop)
 void setSpeed(int newSpeed){
 int PWM_Setting = (PWM_SLOW - ((PWM_SLOW*newSpeed)/100)+1); //speed inversely correlated to PWM
@@ -95,4 +192,3 @@ void driveBMotor(boolean direction, int speed){
   }
   analogWrite( MOTOR_B_PWM, speed);
 }
-*/
