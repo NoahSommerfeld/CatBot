@@ -16,6 +16,9 @@ long lastDistance = 0;
 void setup()
 {
   Serial.begin( 9600 );
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB
+  }
   ultraSonicSetup();
   motorSetup();
   servoSetup();
@@ -41,7 +44,7 @@ void loop(){
   action();
  
   // Prints the distance on the Serial Monitor
-  Serial.println("Distance: "+String(lastDistance));
+//  Serial.println("Distance: "+String(lastDistance));
   
 }
 

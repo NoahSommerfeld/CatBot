@@ -1,5 +1,7 @@
 from tkinter import *
-
+import serial
+#import syslog
+import time
 class Window(Frame):
 
 
@@ -25,6 +27,32 @@ class Window(Frame):
 
     def client_exit(self):
         exit()
+
+
+
+#The following line is for serial over GPIO
+port = 'COM4'
+
+
+ard = serial.Serial(port,9600,timeout=5)
+time.sleep(3)
+i = 0
+
+while (i < 4):
+    # Serial write section
+
+    print ("Python value sent: ")
+    ard.write("|test+".encode())
+    time.sleep(4)
+
+    # Serial read section
+    msg = ard.read(ard.inWaiting())
+    print ("Message from arduino: ")
+    print (msg)
+    i = i + 1
+else:
+    print ("Exiting")
+
         
 root = Tk()
 
@@ -33,3 +61,5 @@ root.geometry("400x300")
 
 app = Window(root)
 root.mainloop()  
+
+exit()
