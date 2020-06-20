@@ -1,5 +1,3 @@
-#include <Servo.h>
-
 #define SERVODRIVER_MAIN 9 //wire controlling line
 #define ultrasonic_trigger_pin_main 13
 #define ultrasonic_echo_pin_main 12
@@ -27,7 +25,6 @@ void setup()
 
 
 void loop(){
-
   //receive message
   String tempMessage = refreshMailbox();
   if(tempMessage.length() >0){

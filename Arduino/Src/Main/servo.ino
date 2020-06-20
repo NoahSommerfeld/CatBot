@@ -1,6 +1,5 @@
+#include <Servo.h>
 #define SERVODRIVER SERVODRIVER_MAIN;
-
-
 
 Servo myservo; // create servo object to control a servo
 int ServoPos = 0;
