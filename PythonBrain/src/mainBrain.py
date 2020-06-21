@@ -38,12 +38,14 @@ ard = serial.Serial(port,9600,timeout=5)
 time.sleep(3)
 i = 0
 
-while (i < 4):
+
+print ("Python value sent: ")
+ard.write("|test+".encode())
+
+while (i < 10):
     # Serial write section
 
-    print ("Python value sent: ")
-    ard.write("|test+".encode())
-    time.sleep(4)
+    time.sleep(1)
 
     # Serial read section
     msg = ard.read(ard.inWaiting())
