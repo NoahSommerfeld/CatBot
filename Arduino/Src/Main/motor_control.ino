@@ -14,7 +14,7 @@
 #define CONTROL_PAUSE 2000 // to pause between steps for dramatic effect
 
 
-int currentDriveSpeed=0; //initalize to a stopped speed
+
 /*
   HG7881_Motor_Driver_Example - Arduino sketch
    
@@ -66,20 +66,38 @@ void driveBMotor(boolean direction, int speed){
 }
 
 
-//newSpeed - percentage of speed to drive (0 = full stop)
-void setSpeed(int newSpeed){
-  int PWM_Setting = (PWM_SLOW - ((PWM_SLOW*newSpeed)/100)+1); //speed inversely correlated to PWM
+//newSpeed - percentage of speed to drive (-100 full back, 0 = stop, 100 full forward)
+int setSpeed(int newSpeed){
+  if(newSpeed == currentDriveSpeed){
+    return;
+  }
+  int candidateSpeed = abs(newSpeed);
+  boolean direction = true;
+  int PWM_Setting = 0;
+  if(newSpeed <0){
+    direction = false;
+   PWM_Setting = (PWM_SLOW - ((PWM_SLOW*(newSpeed*-1))/100)+1); //speed inversely correlated to PWM
+  }
+  else{
+    direction = true;
+    PWM_Setting = (PWM_SLOW - ((PWM_SLOW*(newSpeed))/100)+1);
+  }
     
   //set the speed
+  
+  if(newSpeed == (currentDriveSpeed*-1)){
+    stopBMotor();
+    delay(1000); //let the car stop
+  }
   if(newSpeed==currentDriveSpeed){
     // Serial.println("do nothing");
     //do nothing
   }
-  else if(newSpeed>currentDriveSpeed){
+  else if(abs(newSpeed)>abs(currentDriveSpeed)){
     Serial.println("speed up to"+String(newSpeed)+" and "+String(PWM_Setting));
-    driveBMotor(true, PWM_FAST); //to get the car moving
+    driveBMotor(direction, PWM_FAST); //to get the car moving
     delay(150);
-    driveBMotor(true, PWM_Setting);
+    driveBMotor(direction, PWM_Setting);
     currentDriveSpeed = newSpeed;
   }
   else if(newSpeed == 0){
@@ -89,8 +107,9 @@ void setSpeed(int newSpeed){
   }
   else{
     Serial.println("slow down to "+String(newSpeed)+" and "+String(PWM_Setting));
-    driveBMotor(true, PWM_Setting);
+    driveBMotor(direction, PWM_Setting);
     currentDriveSpeed = newSpeed;
   }
+  return newSpeed;
 }
  

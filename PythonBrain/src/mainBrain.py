@@ -25,35 +25,35 @@ class Window(Frame):
 
         # creating a button instance
         GoLeft = Button(self, text="GoLeft")
-        GoLeft.bind("<ButtonPress>",  lambda e: setCommand(e,"GoLeft Pressed"))
-        GoLeft.bind("<ButtonRelease>", lambda e: setCommand(e,"GoLeft Released"))  
+        GoLeft.bind("<ButtonPress>",  lambda e: setCommand(e,"GoLeft"))
+        GoLeft.bind("<ButtonRelease>", lambda e: setCommand(e,"Stop"))  
         GoLeft.place(x=0, y=0)
         
         GoStraight = Button(self, text="GoStraight")
-        GoStraight.bind("<ButtonPress>",  lambda e: setCommand(e,"GoStraight Pressed"))
-        GoStraight.bind("<ButtonRelease>", lambda e: setCommand(e,"GoStraight Released"))  
+        GoStraight.bind("<ButtonPress>",  lambda e: setCommand(e,"GoStraight"))
+        GoStraight.bind("<ButtonRelease>", lambda e: setCommand(e,"Stop"))  
         GoStraight.place(x=75, y=0)
 
         GoRight = Button(self, text="GoRight")
-        GoRight.bind("<ButtonPress>",  lambda e: setCommand(e,"GoRight Pressed"))
-        GoRight.bind("<ButtonRelease>", lambda e: setCommand(e,"GoRight Released"))   
+        GoRight.bind("<ButtonPress>",  lambda e: setCommand(e,"GoRight"))
+        GoRight.bind("<ButtonRelease>", lambda e: setCommand(e,"Stop"))   
         GoRight.place(x=150, y=0)
 
         #Backup
         BackLeft = Button(self, text="BackLeft")
-        BackLeft.bind("<ButtonPress>",  lambda e: setCommand(e,"BackLeft Pressed"))
-        BackLeft.bind("<ButtonRelease>", lambda e: setCommand(e,"BackLeft Released"))       
+        BackLeft.bind("<ButtonPress>",  lambda e: setCommand(e,"BackLeft"))
+        BackLeft.bind("<ButtonRelease>", lambda e: setCommand(e,"Stop"))       
         BackLeft.place(x=0, y=25)
 
         BackStraight = Button(self, text="BackStraight")
-        BackStraight.bind("<ButtonPress>",  lambda e: setCommand(e,"BackStraight Pressed"))
-        BackStraight.bind("<ButtonRelease>", lambda e: setCommand(e,"BackStraight Released"))
+        BackStraight.bind("<ButtonPress>",  lambda e: setCommand(e,"BackStraight"))
+        BackStraight.bind("<ButtonRelease>", lambda e: setCommand(e,"Stop"))
         BackStraight.place(x=75, y=25)
 
         
         BackRight = Button(self, text="BackRight")
-        BackRight.bind("<ButtonPress>",  lambda e: setCommand(e,"backRight Pressed"))
-        BackRight.bind("<ButtonRelease>", lambda e: setCommand(e,"backRight Released"))
+        BackRight.bind("<ButtonPress>",  lambda e: setCommand(e,"BackRight"))
+        BackRight.bind("<ButtonRelease>", lambda e: setCommand(e,"Stop"))
         BackRight.place(x=150, y=25)
 
 
@@ -65,10 +65,17 @@ def on_press(self, test):
     print(test)
 
 def on_release(self):
+    ard.write("|test+".encode())
     print("button was released")
 
 def setCommand(self, command):
+    ard.write(("|"+command+"+").encode())
     print(command)
+    time.sleep(2)
+    msg = ard.read(ard.inWaiting())
+    print ("Message from arduino: ")
+    print (msg)
+    
 
     
 root = Tk()
@@ -82,7 +89,7 @@ root.mainloop()
 
 i = 0
 
-
+"""
 print ("Python value sent: ")
 ard.write("|test+".encode())
 
@@ -100,3 +107,4 @@ else:
     print ("Exiting")
 
 exit()
+"""

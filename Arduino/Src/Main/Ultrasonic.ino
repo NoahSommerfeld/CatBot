@@ -14,7 +14,8 @@ void ultraSonicSetup(){
 
 
 long readUltrasonic(){
-  // Clears the trigPin
+   return 200; //debugging - always return nice value
+   // Clears the trigPin
   digitalWrite(ultrasonic_trigger_pin, LOW);
   delayMicroseconds(2);
   
@@ -30,5 +31,6 @@ long readUltrasonic(){
   // Reads the echoPin, returns the sound wave travel time in microseconds  (0.340197 centimeters /microsecond at sea level, round trip)
   distance1 = pulseIn(ultrasonic_echo_pin, HIGH) * 0.034/2;
 
-  return (distance1+distance2+distance3)/3; //average the last three. Slows it down a bit but stops random stops
+ // return (distance1+distance2+distance3)/3; //average the last three. Slows it down a bit but stops random stops
+
 }
